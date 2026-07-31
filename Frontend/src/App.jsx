@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
 // Pages
-import Home from './pages/Home';
+import Home from './pages/home';
 import Marketplace from './pages/Marketplace';
 import ProductDetails from './pages/ProductDetails';
 import Categories from './pages/Categories';
