@@ -53,7 +53,7 @@ export default function Contact() {
         <h1 className="text-2xl dark:text-white text-gray-900 font-bold border-b border-gray-200 dark:border-gray-800 pb-4">Contact</h1>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="text-xs font-bold text-gray-800 block mb-1">Subject</label>
+            <label className="text-xs font-bold dark:text-gray-400 text-gray-800 block mb-1">Subject</label>
             <input 
               type="text" 
               required 
@@ -63,7 +63,7 @@ export default function Contact() {
             />
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-800 block mb-1">Message</label>
+            <label className="text-xs font-bold dark:text-gray-400 text-gray-800 block mb-1">Message</label>
             <textarea 
               rows="4" 
               required 
