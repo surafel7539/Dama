@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --color-dama-primary: #041c14;
+  --color-dama-surface: #0a291f;
+  --color-dama-gold: #c29b57;
+  --color-dama-goldHover: #a88548;
+  --color-dama-lightBg: #f4f5f7;
+  --color-dama-white: #ffffff;
+  --color-dama-textMuted: #8ba39a;
+}
