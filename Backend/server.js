@@ -37,10 +37,14 @@ app.use(cors({
   },
   credentials: true // Allows sending cookies & authorization headers
 }));
+
+// CRITICAL: Handle preflight OPTIONS requests for all routes automatically
+app.options('*', cors());
+
 app.use(express.json());
 
 // Security Middleware (Arcjet)
-
+// app.use(securityCheck); // Keep commented out temporarily until CORS is verified working
 
 // API Routes
 app.use('/api/auth', authRoutes);
