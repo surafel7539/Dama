@@ -19,8 +19,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Core Middlewares
+const allowedOrigins = [
+  'http://localhost:5173',                  // Local Vite development
+  'https://dama-ach4-alpha.vercel.app'      // Your live Vercel frontend
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173', // Your React app's URL
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true // Allows sending cookies & authorization headers
 }));
 app.use(express.json());
