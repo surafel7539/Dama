@@ -39,7 +39,7 @@ app.use(cors({
 }));
 
 // CRITICAL: Handle preflight OPTIONS requests for all routes automatically
-app.options('*', cors());
+
 
 app.use(express.json());
 
