@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 5000;
 // Core Middlewares
 const allowedOrigins = [
   'http://localhost:5173',                  // Local Vite development
-  'https://dama-ach4-alpha.vercel.app/'      // Your live Vercel frontend
+  'https://dama-ach4-alpha.vercel.app'      // 🚨 CRITICAL FIX: Removed trailing slash
 ];
 
 app.use(cors({
@@ -44,8 +44,6 @@ app.use(express.json());
 // app.use(securityCheck); // Keep commented out temporarily until CORS is verified working
 
 // API Routes
-// 🚨 CRITICAL FIX: Removed the '/api' prefix so it matches your frontend requests.
-// (e.g., changes '/api/auth' to '/auth')
 app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);
