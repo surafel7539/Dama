@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 5000;
 // Core Middlewares
 const allowedOrigins = [
   'http://localhost:5173',                  // Local Vite development
-  'https://dama-ach4-alpha.vercel.app'      // Your live Vercel frontend
+  'https://dama-ach4-alpha.vercel.app/'      // Your live Vercel frontend
 ];
 
 app.use(cors({
