@@ -33,8 +33,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Add this line directly underneath to force preflight checks to pass
-app.options('*', cors({ origin: allowedOrigins, credentials: true }));
+
 
 app.use(express.json());
 
