@@ -38,25 +38,24 @@ app.use(cors({
   credentials: true // Allows sending cookies & authorization headers
 }));
 
-// CRITICAL: Handle preflight OPTIONS requests for all routes automatically
-
-
 app.use(express.json());
 
 // Security Middleware (Arcjet)
 // app.use(securityCheck); // Keep commented out temporarily until CORS is verified working
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
+// 🚨 CRITICAL FIX: Removed the '/api' prefix so it matches your frontend requests.
+// (e.g., changes '/api/auth' to '/auth')
+app.use('/auth', authRoutes);
+app.use('/products', productRoutes);
+app.use('/orders', orderRoutes);
 
 // Health Endpoint
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Dama Marketplace API is live and secure!' });
 });
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
