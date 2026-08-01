@@ -21,14 +21,15 @@ const PORT = process.env.PORT || 5000;
 // Core Middlewares
 // Replace the allowedOrigins array and app.use(cors(...)) with this:
 
+app.use((req, res, next) => {
+  console.log("REQUEST:", req.method, req.url);
+  next();
+});
 const allowedOrigins = [
   'http://localhost:5173',
   'https://dama-ach4-alpha.vercel.app'
 ];
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.originalUrl}`);
-  next();
-});
+
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
