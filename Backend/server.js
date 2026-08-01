@@ -19,24 +19,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Core Middlewares
+// Replace the allowedOrigins array and app.use(cors(...)) with this:
+
 const allowedOrigins = [
-  'http://localhost:5173',                  // Local Vite development
-  'https://dama-ach4-alpha.vercel.app'      // 🚨 CRITICAL FIX: Removed trailing slash
+  'http://localhost:5173',
+  'https://dama-ach4-alpha.vercel.app' 
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, or curl)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true // Allows sending cookies & authorization headers
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Add this line directly underneath to force preflight checks to pass
+app.options('*', cors({ origin: allowedOrigins, credentials: true }));
 
 app.use(express.json());
 
