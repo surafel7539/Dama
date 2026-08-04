@@ -7,9 +7,7 @@ export default function Checkout({ navigateTo = () => {}, cartItems = [], setCar
 
   // Controlled form state initialized with user context or defaults
   const [shippingInfo, setShippingInfo] = useState({
-    fullName: user?.fullName || 'Adonis K.',
-    address: 'Bole, Addis Ababa, Ethiopia',
-    phone: '+251 912 345 678'
+    fullName: user?.fullName ,
   });
 
   const [paymentMethod, setPaymentMethod] = useState('telebirr');
@@ -71,6 +69,7 @@ export default function Checkout({ navigateTo = () => {}, cartItems = [], setCar
               <input 
                 type="text" 
                 required
+                placeholder='eg: Bole, Addis Ababa, Ethiopia'
                 value={shippingInfo.address} 
                 onChange={(e) => setShippingInfo({ ...shippingInfo, address: e.target.value })}
                 className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 rounded p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c29b57]" 
@@ -81,6 +80,7 @@ export default function Checkout({ navigateTo = () => {}, cartItems = [], setCar
               <input 
                 type="text" 
                 required
+                placeholder='eg: +251 912 345 678'
                 value={shippingInfo.phone} 
                 onChange={(e) => setShippingInfo({ ...shippingInfo, phone: e.target.value })}
                 className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 rounded p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c29b57]" 

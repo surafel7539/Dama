@@ -1,68 +1,134 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { Store, Plus, Package, DollarSign, TrendingUp, Trash2 } from 'lucide-react';
+import { Store, Plus,Edit2Icon, Package, DollarSign, TrendingUp, Trash2, UploadIcon } from 'lucide-react';
+
 import { apiRequest } from '../services/api';
 
 export default function SellerDashboard({ products = [], setProducts = () => {} }) {
   const [activeTab, setActiveTab] = useState('products');
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    price: '',
-    category: '',
-    image: '',
-    description: ''
-  });
+  name: '',
+  price: '',
+  category: '',
+  image: null,
+  description: '',
+  stock:''
+});
   const [loading, setLoading] = useState(false);
 
   // Handle adding a new product listing
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
-    if (!newProduct.name || !newProduct.price || !newProduct.category) {
-      toast.error('Please fill in all required fields');
-      return;
+ const handleEditProduct = (product) => {
+    setNewProduct({
+        name: product.title,
+        price: product.price,
+        category: product.category,
+        description: product.description,
+        image: null,
+    });
+
+    setEditingProduct(product);
+    setActiveTab("add");
+};
+ const handleAddProduct = async (e) => {
+  e.preventDefault();
+
+  if (
+    !newProduct.name ||
+    !newProduct.price ||
+    !newProduct.category ||
+    !newProduct.image ||
+    !newProduct.stock
+  ) {
+    toast.error("Please fill in all required fields");
+    return;
+  }
+
+  setLoading(true);
+  const toastId = toast.loading("Adding product...");
+
+  try {
+    const formData = new FormData();
+
+    formData.append("title", newProduct.name);
+    formData.append("description", newProduct.description);
+    formData.append("price", newProduct.price);
+    formData.append("category", newProduct.category);
+    formData.append("stock", newProduct.stock);
+    formData.append("image", newProduct.image);
+
+    const createdProduct = await apiRequest("/products", {
+      method: "POST",
+      body: formData,
+    });
+    if (editingProduct) {
+
+    await apiRequest(`/products/${editingProduct._id}`, {
+        method: "PUT",
+        body: formData,
+    });
+
+} else {
+
+    await apiRequest("/products", {
+        method: "POST",
+        body: formData,
+    });
+
+}
+
+    if (typeof setProducts === "function") {
+      setProducts((prev) => [createdProduct, ...prev]);
     }
 
-    setLoading(true);
-    const toastId = toast.loading('Adding product...');
+    toast.dismiss(toastId);
+    toast.success("Product listed successfully!");
 
-    try {
-      // Connect to your backend API to save the product
-      const createdProduct = await apiRequest('/products', {
-        method: 'POST',
-        body: JSON.stringify(newProduct)
-      });
+    setNewProduct({
+      name: "",
+      price: "",
+      category: "",
+      image: null,
+      description: "",
+      stock:""
+    });
 
-      // Update local product state if setter is provided
-      if (typeof setProducts === 'function') {
-        setProducts(prev => [createdProduct || { ...newProduct, id: Date.now() }, ...prev]);
-      }
+    setActiveTab("products");
 
-      toast.dismiss(toastId);
-      toast.success('Product listed successfully!');
-      setNewProduct({ name: '', price: '', category: '', image: '', description: '' });
-      setActiveTab('products');
-    } catch (error) {
-      toast.dismiss(toastId);
-      // Fallback local update if API endpoint is offline
-      const fallbackItem = { ...newProduct, id: Date.now() };
-      if (typeof setProducts === 'function') {
-        setProducts(prev => [fallbackItem, ...prev]);
-      }
-      toast.success('Product listed successfully!');
-      setNewProduct({ name: '', price: '', category: '', image: '', description: '' });
-      setActiveTab('products');
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (error) {
+    toast.dismiss(toastId);
+    toast.error(error.message || "Failed to publish product");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Handle product deletion
-  const handleDeleteProduct = (id) => {
-    if (typeof setProducts === 'function') {
-      setProducts(prev => prev.filter(p => (p._id || p.id) !== id));
+ // Handle product deletion
+const handleDeleteProduct = async (id) => {
+  try {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
+
+    if (!confirmDelete) return;
+
+    await apiRequest(`/products/${id}`, {
+      method: "DELETE",
+    });
+
+    if (typeof setProducts === "function") {
+      setProducts((prev) =>
+        prev.filter((p) => (p._id || p.id) !== id)
+      );
     }
-    toast.success('Product removed');
-  };
+
+    toast.success("Product deleted successfully");
+
+  } catch (error) {
+    console.error("Delete product error:", error);
+    toast.error(error.message || "Failed to delete product");
+  }
+};
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-10 space-y-8">
@@ -145,29 +211,45 @@ export default function SellerDashboard({ products = [], setProducts = () => {} 
           ) : (
             <div className="space-y-4">
               {products.map(p => {
-                const pId = p._id || p.id;
-                const pName = p.name || p.title || 'Product';
-                const pImage = p.image || p.imageUrl || 'https://via.placeholder.com/150';
-                const pPrice = p.price || '0';
+               const pId = p._id || p.id;
+                const pName = p.title || p.name || "Untitled Product";
+                const pImage =
+                  p.image ||
+                  "https://placehold.co/200x200?text=No+Image";
+                const pPrice = Number(p.price || 0).toLocaleString();
 
                 return (
                   <div key={pId} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#041c14] rounded-2xl border border-gray-200 dark:border-gray-800">
                     <div className="flex items-center gap-4">
-                      <img src={pImage} alt={pName} className="w-16 h-16 object-contain rounded-xl bg-gray-800 border border-gray-700" />
+                      <img
+                        src={pImage}
+                        alt={pName}
+                        onError={(e) => {
+                          e.target.src = "https://placehold.co/200x200?text=No+Image";
+                        }}
+                        className="w-16 h-16 object-contain rounded-xl bg-gray-800 border border-gray-700"
+                      />
                       <div>
                         <h3 className="font-bold text-sm dark:text-white">{pName}</h3>
                         <p className="text-xs text-gray-400 mt-0.5">{p.category || 'General'}</p>
                         <p className="text-sm font-bold text-[#c29b57] mt-1">Br {pPrice}</p>
                       </div>
                     </div>
-
+                    <div className='flex gap-4 justify-center align-center'>
+                    <button
+                        onClick={() => handleEditProduct(p)}
+                        className="text-blue-500 hover:bg-blue-600/10 p-2 rounded-xl"
+                    >
+                        <Edit2Icon size={18}/>
+                    </button>
                     <button 
-                      onClick={() => handleDeleteProduct(pId)}
+                      onClick={() => handleDeleteProduct(p.Id || p._id)}
                       className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors"
                       title="Delete Listing"
                     >
                       <Trash2 size={18} />
                     </button>
+                    </div>
                   </div>
                 );
               })}
@@ -190,13 +272,14 @@ export default function SellerDashboard({ products = [], setProducts = () => {} 
                 className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c29b57]" 
               />
             </div>
-
+          </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold text-gray-400 block mb-1">Price (Br)</label>
                 <input 
                   type="text" 
                   required
+                  min={1}
                   placeholder="e.g. 2,500"
                   value={newProduct.price}
                   onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
@@ -217,28 +300,64 @@ export default function SellerDashboard({ products = [], setProducts = () => {} 
               </div>
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-gray-400 block mb-1">Image URL</label>
-              <input 
-                type="url" 
-                placeholder="https://example.com/image.jpg"
-                value={newProduct.image}
-                onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c29b57]" 
-              />
+            <div className='grid grid-cols-2 gap-4 ' >
+              <div>
+              <label className="text-xs font-bold text-gray-400 block mb-1">
+                Product Image
+              </label>
+
+              <div className="relative">
+                <UploadIcon
+                  size={20}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  required
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      image: e.target.files[0],
+                    })
+                  }
+                  className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 rounded-xl p-3 pl-10 text-sm focus:outline-none focus:ring-1 focus:ring-[#c29b57]"
+                />
+              </div>
+              </div>
+              
+              <div>
+                <label className="text-xs font-bold text-gray-400 block mb-1">
+                Stock Amount
+              </label>
+                <input 
+                type="number"  
+                placeholder='How much of this product will you sell'
+                 onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                 className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c29b57]" 
+                />
+              </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-400 block mb-1">Description</label>
-              <textarea 
-                rows="3"
-                placeholder="Describe your product details..."
+              <label className="text-xs font-bold text-gray-400 block mb-1">
+                Description
+              </label>
+
+              <textarea
+                rows={3}
+                placeholder="Describe your product..."
                 value={newProduct.description}
-                onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                onChange={(e) =>
+                  setNewProduct({
+                    ...newProduct,
+                    description: e.target.value,
+                  })
+                }
                 className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c29b57]"
-              ></textarea>
+              />
             </div>
-          </div>
 
           <button 
             type="submit" 
@@ -251,5 +370,5 @@ export default function SellerDashboard({ products = [], setProducts = () => {} 
       )}
 
     </div>
-  );
-}
+    
+  );}

@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 
 // Helper to generate JWT
 const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
 // Cookie configuration options
@@ -17,7 +17,7 @@ const cookieOptions = {
 
 export const register = async (req, res) => {
   try {
-    const { fullName, email, password, role } = req.body;
+    const { fullName, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -25,8 +25,8 @@ export const register = async (req, res) => {
     }
 
     // Role Whitelisting (prevents unauthorized admin role injection)
-    const allowedRoles = ['buyer', 'seller'];
-    const sanitizedRole = allowedRoles.includes(role) ? role : 'buyer';
+    
+    
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -35,17 +35,17 @@ export const register = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      role: sanitizedRole
+      
     });
 
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user._id);
 
     // Set HTTP-Only Cookie
     res.cookie('jwt', token, cookieOptions);
 
     res.status(201).json({
       token, // Sending in body as well for flexible frontend usage
-      user: { id: user._id, fullName: user.fullName, email: user.email, role: user.role }
+      user: { id: user._id, fullName: user.fullName, email: user.email,  }
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -66,14 +66,14 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user._id);
 
     // Set HTTP-Only Cookie
     res.cookie('jwt', token, cookieOptions);
 
     res.json({
       token, // Sending in body as well for flexible frontend usage
-      user: { id: user._id, fullName: user.fullName, email: user.email, role: user.role }
+      user: { id: user._id, fullName: user.fullName, email: user.email}
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

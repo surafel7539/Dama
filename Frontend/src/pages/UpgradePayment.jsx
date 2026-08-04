@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { ShieldCheck, CheckCircle, CreditCard } from 'lucide-react';
 
 export default function UpgradePayment({ navigateTo }) {
-  const { user, login } = useAuth(); // Assuming 'login' or an 'updateUser' function exists in your context
+  const { user,setUser, login } = useAuth(); // Assuming 'login' or an 'updateUser' function exists in your context
   const [paymentMethod, setPaymentMethod] = useState('telebirr');
   const [loading, setLoading] = useState(false);
 
@@ -20,18 +20,22 @@ export default function UpgradePayment({ navigateTo }) {
       toast.dismiss(toastId);
       toast.success('Welcome to Premium Seller Hub!');
 
-      // Update the global user state so the paywall disappears
-      if (user) {
-        // You would typically make an API call here, then update context:
-        // await apiRequest('/user/upgrade', { method: 'POST' });
-        login({ ...user, isPremium: true, role: 'seller' }); 
-      }
+     localStorage.setItem("isPremium", "true");
+
+      setUser({
+        ...user,
+        role: "seller",
+        isPremium: true,
+      });
 
       // Redirect straight into the unlocked dashboard
       navigateTo('seller-dashboard');
     }, 1500);
   };
 
+  const navigateToSellerHub = () => {
+
+  }
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
       <div className="text-center mb-10">

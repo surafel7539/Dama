@@ -1,6 +1,7 @@
+import  'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
 import { securityCheck } from './src/middleware/arcjet.js';
 
@@ -9,10 +10,9 @@ import authRoutes from './src/routes/authRoutes.js';
 import productRoutes from './src/routes/productRoutes.js';
 import orderRoutes from './src/routes/orderRoutes.js';
 
-dotenv.config();
+
 import connectDB from './src/config/db.js';
 
-// Connect Database
 connectDB();
 
 const app = express();
@@ -21,10 +21,7 @@ const PORT = process.env.PORT || 5000;
 // Core Middlewares
 // Replace the allowedOrigins array and app.use(cors(...)) with this:
 
-app.use((req, res, next) => {
-  console.log("REQUEST:", req.method, req.url);
-  next();
-});
+
 const allowedOrigins = [
   'http://localhost:5173',
   'https://dama-ach4-alpha.vercel.app'
@@ -41,8 +38,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Security Middleware (Arcjet)
-// app.use(securityCheck); // Keep commented out temporarily until CORS is verified working
+
 
 // API Routes
 app.use('/auth', authRoutes);

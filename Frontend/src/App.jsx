@@ -23,6 +23,8 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import { apiRequest } from "./services/api";
+import ProductCard from './components/ProductCard';
 
 // Data
 import { MOCK_PRODUCTS } from './data/mockData';
@@ -32,13 +34,16 @@ export default function App() {
   const [lang, setLang] = useState('en');
   const [darkMode, setDarkMode] = useState(true);
   const [currentPage, setCurrentPage] = useState('home');
-  const [selectedProductId, setSelectedProductId] = useState(1);
+  const [selectedProductId, setSelectedProductId] = useState(null);
   const [cartItems, setCartItems] = useState([
     { ...MOCK_PRODUCTS[0], qty: 1 },
     { ...MOCK_PRODUCTS[1], qty: 1 }
   ]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState([]);
 
+
+  
   // Handle dark mode toggle on root element
   useEffect(() => {
     const root = document.documentElement;
@@ -48,29 +53,53 @@ export default function App() {
       root.classList.remove('dark');
     }
   }, [darkMode]);
+  useEffect(() => {
+  const loadProducts = async () => {
+    try {
+      const data = await apiRequest("/products");
 
-  // Page Navigation Helper with Paywall Interception for Seller Hub
-  const navigateTo = (page, param = null) => {
-    // Intercept Seller Hub routing if user is not premium/seller
-    if (page === 'seller-dashboard') {
-      const isPremiumSeller = user?.role === 'seller' || user?.isPremium;
-      if (!isPremiumSeller) {
-        setCurrentPage('upgrade-payment');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
+      console.log("Products:", data);
+
+      setProducts(Array.isArray(data) ? data : data.products || []);
+    } catch (err) {
+      console.error(err);
     }
-
-    if (page === 'marketplace' && param && typeof param === 'object' && param.search) {
-      setSearchQuery(param.search);
-    } else if (param && typeof param === 'number') {
-      setSelectedProductId(param);
-    }
-
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+    loadProducts();
+  }, []);
+  // Page Navigation Helper with Paywall Interception for Seller Hub
+  const navigateTo = (page, param = null) => {
+
+  if (page === 'seller-dashboard') {
+    const isPremiumSeller =
+      user?.isPremium || localStorage.getItem("isPremium") === "true";
+
+    if (!isPremiumSeller) {
+      setCurrentPage('upgrade-payment');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  }
+
+
+  if (
+    page === 'marketplace' &&
+    param &&
+    typeof param === 'object' &&
+    param.search
+  ) {
+    setSearchQuery(param.search);
+  } 
+  
+  else if (param) {
+    setSelectedProductId(param);
+  }
+
+
+  setCurrentPage(page);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
   // Add Item to Cart with Toast Notification
   const addToCart = (product) => {
     setCartItems(prev => {
@@ -119,27 +148,42 @@ export default function App() {
       />
 
       {/* 2. Main Page Router */}
-      <div className={`transition-colors duration-300 ${darkMode ? 'bg-[#041c14] text-white' : 'bg-gray-100 text-gray-900'}`}>
+      <div className={`transition-colors duration-300 ${darkMode ? 'bg-[#041c14] text-white' : 'bg-gray-100 text-gray-900'}`} >
         <main className="min-h-[80vh]">
           {currentPage === 'home' && <Home navigateTo={navigateTo} addToCart={addToCart} />}
-          {currentPage === 'marketplace' && <Marketplace navigateTo={navigateTo} addToCart={addToCart} searchQuery={searchQuery} />}
-          {currentPage === 'product-details' && <ProductDetails productId={selectedProductId} addToCart={addToCart} navigateTo={navigateTo} />}
+         {currentPage === 'marketplace' && 
+ <Marketplace 
+   products={products}
+   navigateTo={navigateTo}
+   addToCart={addToCart}
+   searchQuery={searchQuery}
+/>}
+          {currentPage === 'product-details' && <ProductDetails
+    products={products}
+    productId={selectedProductId}
+    addToCart={addToCart}
+    navigateTo={navigateTo}
+  />}
           {currentPage === 'categories' && <Categories navigateTo={navigateTo} />}
           {currentPage === 'search' && <SearchResults searchQuery={searchQuery} navigateTo={navigateTo} addToCart={addToCart} />}
           {currentPage === 'cart' && <Cart cartItems={cartItems} setCartItems={setCartItems} navigateTo={navigateTo} />}
           {currentPage === 'checkout' && <Checkout navigateTo={navigateTo} />}
-          
+           
           {/* Auth Pages */}
           {currentPage === 'login' && <Login navigateTo={navigateTo} />}
           {currentPage === 'register' && <Register navigateTo={navigateTo} />}
           
           {/* Dashboards & Monetization */}
           {currentPage === 'buyer-dashboard' && (
-            user ? <BuyerDashboard navigateTo={navigateTo} /> : <Login navigateTo={navigateTo} />
+            user ? <BuyerDashboard navigateTo={'buyer-dashboard'} /> : <Login navigateTo={navigateTo} />
           )}
-          {currentPage === 'seller-dashboard' && (
-            (user?.role === 'seller' || user?.isPremium) ? <SellerDashboard navigateTo={navigateTo} /> : <UpgradePayment navigateTo={navigateTo} />
-          )}
+          {currentPage === "seller-dashboard" && (
+              <SellerDashboard
+                navigateTo={navigateTo}
+                products={products}
+                setProducts={setProducts}
+              />
+            )}
           {currentPage === 'upgrade-payment' && <UpgradePayment navigateTo={navigateTo} />}
 
           {/* User Settings & Info */}

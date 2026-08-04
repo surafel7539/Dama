@@ -6,6 +6,8 @@ export default function ProductCard({
   navigateTo = () => {}, 
   addToCart = () => {} 
 }) {
+  
+
   if (!product) return null;
 
   // Handles both MongoDB '_id' and mock data 'id'
@@ -24,7 +26,7 @@ export default function ProductCard({
     <div className="bg-white dark:bg-[#0a291f] text-gray-900 dark:text-white rounded-xl overflow-hidden border border-gray-900 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col group">
       {/* Product Image Container */}
       <div 
-        onClick={() => navigateTo('product-details', productId)}
+        onClick={() => navigateTo('product-details', product._id || product.id)}
         className="relative aspect-[4/3] bg-gray-50 dark:bg-gray-800/50 p-4 cursor-pointer overflow-hidden flex items-center justify-center"
       >
         <img 
