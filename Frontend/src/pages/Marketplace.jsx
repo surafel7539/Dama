@@ -5,7 +5,7 @@ import { MOCK_PRODUCTS } from '../data/mockData';
 export default function Marketplace({ navigateTo, addToCart,searchQuery = '', products = [] }) {
 const allProducts = products?.length > 0 
   ? products 
-  : MOCK_PRODUCTS;
+  :  MOCK_PRODUCTS;
   const filteredProducts = products.filter(p => {
     const name = (p.name || p.title || '').toLowerCase();
 

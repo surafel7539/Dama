@@ -17,18 +17,7 @@ export default function SellerDashboard({ products = [], setProducts = () => {} 
   const [loading, setLoading] = useState(false);
 
   // Handle adding a new product listing
- const handleEditProduct = (product) => {
-    setNewProduct({
-        name: product.title,
-        price: product.price,
-        category: product.category,
-        description: product.description,
-        image: null,
-    });
-
-    setEditingProduct(product);
-    setActiveTab("add");
-};
+ 
  const handleAddProduct = async (e) => {
   e.preventDefault();
 
@@ -60,21 +49,11 @@ export default function SellerDashboard({ products = [], setProducts = () => {} 
       method: "POST",
       body: formData,
     });
-    if (editingProduct) {
+   
 
-    await apiRequest(`/products/${editingProduct._id}`, {
-        method: "PUT",
-        body: formData,
-    });
 
-} else {
 
-    await apiRequest("/products", {
-        method: "POST",
-        body: formData,
-    });
 
-}
 
     if (typeof setProducts === "function") {
       setProducts((prev) => [createdProduct, ...prev]);
@@ -236,12 +215,7 @@ const handleDeleteProduct = async (id) => {
                       </div>
                     </div>
                     <div className='flex gap-4 justify-center align-center'>
-                    <button
-                        onClick={() => handleEditProduct(p)}
-                        className="text-blue-500 hover:bg-blue-600/10 p-2 rounded-xl"
-                    >
-                        <Edit2Icon size={18}/>
-                    </button>
+                    
                     <button 
                       onClick={() => handleDeleteProduct(p.Id || p._id)}
                       className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors"
