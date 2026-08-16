@@ -194,7 +194,7 @@ const navigateTo = (page, param = null) => {
     navigateTo={navigateTo}
     addToCart={addToCart}
     products={products}
-    categories={categories}
+    
   />
 )}
 
