@@ -23,7 +23,9 @@ export const register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
-
+    if(password.length < 8){
+      return res.status(400).json({message:"Password must be longer than 7 letters"})
+    }
     // Role Whitelisting (prevents unauthorized admin role injection)
     
     
@@ -60,7 +62,9 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-
+     if(password.length < 8){
+      return res.status(400).json({message:"Password must be longer than 7 letters"})
+    }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
@@ -147,13 +151,15 @@ export const changePassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
+     if(newPassword.length < 8){
+      return res.status(400).json({message:"Password must be longer than 7 letters"})
+    }
     // 2. Verify current password matches
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Incorrect current password' });
     }
-
+    
     // 3. Hash and set new password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);

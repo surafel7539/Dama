@@ -9,6 +9,7 @@ import { securityCheck } from './src/middleware/arcjet.js';
 import authRoutes from './src/routes/authRoutes.js';
 import productRoutes from './src/routes/productRoutes.js';
 import orderRoutes from './src/routes/orderRoutes.js';
+import aiRoutes from './src/routes/aiRoutes.js'
 
 
 import connectDB from './src/config/db.js';
@@ -44,6 +45,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);
+app.use('/ai', aiRoutes)
 
 // Health Endpoint
 app.get('/health', (req, res) => {

@@ -47,7 +47,7 @@ export default function Navbar({
           <button onClick={() => navigateTo('marketplace')} className="hover:text-[#c29b57] transition-colors">Marketplace</button>
           <button onClick={() => navigateTo('categories')} className="hover:text-[#c29b57] transition-colors">Categories</button>
           <button onClick={() => navigateTo('about')} className="hover:text-[#c29b57] transition-colors">About</button>
-          <button onClick={() => navigateTo('contact')} className="hover:text-[#c29b57] transition-colors">Contact</button>
+          
         </div>
 
         {/* 3. Live Search Bar */}
@@ -141,7 +141,7 @@ export default function Navbar({
             <div className="pt-2 flex flex-col border-t border-gray-200  dark:border-gray-900 space-y-2">
               <button onClick={() => { navigateTo('buyer-dashboard'); setMobileMenuOpen(false); }} className="cursor-pointer rounded-2xl m-2 hover:bg-[#c29b57]  hover:text-white w-full flex align-center justify-center  text-left py-1 text-[#c29b57]">Buyer Dashboard</button>
               <button onClick={() => { navigateTo('seller-dashboard'); setMobileMenuOpen(false); }} className="cursor-pointer rounded-2xl m-2 w-full hover:bg-[#c29b57]  hover:text-white text-left py-1 flex align-center justify-center  text-[#c29b57]">Seller Dashboard</button>
-              <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="cursor-pointer w-full text-left py-1 hover:bg-[#c29b57] ml-2 rounded-2xl   flex align-center justify-center  text-red-400">Logout</button>
+              <button onClick={() => { logout(); window.location.reload(); setMobileMenuOpen(false); }} className="cursor-pointer w-full text-left py-1 hover:bg-[#c29b57] ml-2 rounded-2xl   flex align-center justify-center  text-red-400">Logout</button>
             </div>
           ) : (
             <div className="pt-2 border-t border-gray-200 dark:border-gray-800">

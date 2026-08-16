@@ -3,13 +3,16 @@ import { MOCK_CATEGORIES } from '../data/mockData';
 
 export default function Categories({ categories, navigateTo = () => {} }) {
   // Use passed categories from API, or fallback to MOCK_CATEGORIES
-  const categoryList = (categories && categories.length > 0) ? categories : MOCK_CATEGORIES;
+  const categoryList = MOCK_CATEGORIES;
+  const safeCategoryList = Array.isArray(categoryList)
+  ? categoryList
+  : [];
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-12">
-      <h1 className="text-2xl font-bold mb-8">categories</h1>
+    <div className="max-w-[1600px] dark:text-white text-gray-800 mx-auto px-6 md:px-12 py-12">
+      <h1 className="text-2xl  font-bold mb-8">Categories</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categoryList.map(c => {
+        {safeCategoryList.map(c => {
           const categoryId = c._id || c.id;
           const categoryName = c.name || c.title || 'Category';
           const itemCount = c.count ?? c.itemCount ?? 0;

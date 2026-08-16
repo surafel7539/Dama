@@ -16,6 +16,7 @@ const aj = arcjet({
 });
 
 export const securityCheck = async (req, res, next) => {
+  
   if (!process.env.ARCJET_KEY) return next(); // Skip if key isn't provided yet
   
   try {

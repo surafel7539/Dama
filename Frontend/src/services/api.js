@@ -31,3 +31,8 @@ export const addProductRating = (id, data) =>
     method: "POST",
     body: JSON.stringify(data),
   });
+export const deleteProductRating = async (productId) => {
+  return apiRequest(`/products/${productId}/rating`, {
+    method: "DELETE",
+  });
+};

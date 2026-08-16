@@ -3,10 +3,8 @@ import ProductCard from '../components/ProductCard';
 import { MOCK_PRODUCTS } from '../data/mockData';
 
 export default function Marketplace({ navigateTo, addToCart,searchQuery = '', products = [] }) {
-const allProducts = products?.length > 0 
-  ? products 
-  :  MOCK_PRODUCTS;
-  const filteredProducts = products.filter(p => {
+const allProducts = (products && products.length > 0) ? products : MOCK_PRODUCTS;
+  const filteredProducts = allProducts.filter(p => {
     const name = (p.name || p.title || '').toLowerCase();
 
     const category = (
@@ -25,7 +23,7 @@ const allProducts = products?.length > 0
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-10">
-      <h1 className="text-2xl font-bold mb-6">
+      <h1 className="text-2xl dark:text-white font-bold mb-6">
         Marketplace {searchQuery && `for "${searchQuery}"`}
       </h1>
 
@@ -37,11 +35,11 @@ const allProducts = products?.length > 0
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((p) => (
             <ProductCard
-  key={p._id || p.id}
-  product={p}
-  navigateTo={navigateTo}
-  addToCart={addToCart}
-/>
+              key={p._id || p.id}
+              product={p}
+              navigateTo={navigateTo}
+              addToCart={addToCart}
+            />
           ))}
         </div>
       )}
