@@ -9,24 +9,32 @@ export const AuthProvider = ({ children }) => {
 
   // Restore session on app refresh
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const response = await apiRequest('/auth/profile');
-          // Handle various backend response wrappers (e.g. response.user or direct object)
-          setUser(response?.user || response);
-        } catch (error) {
-          console.error('Session expired or invalid token:', error);
-          localStorage.removeItem('token');
-          setUser(null);
-        }
-      }
-      setLoading(false);
-    };
+  const fetchUser = async () => {
+    const token = localStorage.getItem("token");
 
-    fetchUser();
-  }, []);
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await apiRequest("/auth/profile");
+
+      setUser(response?.user || response);
+    } catch (error) {
+      console.error("Session invalid:", error);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("isPremium");
+
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUser();
+}, []);
 
   const login = async (email, password) => {
     try {
