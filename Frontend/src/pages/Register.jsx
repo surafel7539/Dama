@@ -24,7 +24,7 @@ export default function Register({ navigateTo = () => {} }) {
       toast.success('Registration Successful!');
       
       // Navigate to buyer dashboard or home after successful signup
-      navigateTo('buyer-dashboard');
+      navigateTo('marketplace');
     } catch (error) {
       toast.dismiss(toastId);
       toast.error(error.message || 'Failed to create account. Please try again.');

@@ -23,7 +23,7 @@ export default function Login({ navigateTo = () => {} }) {
       toast.success('Login Successful!');
       
       // Navigate to buyer dashboard (or home) after successful login
-      navigateTo('buyer-dashboard');
+      navigateTo('marketplace');
     } catch (error) {
       toast.dismiss(toastId);
       toast.error(error.message || 'Invalid email or password');
