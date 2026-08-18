@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Product from '../models/Product.js'
 
 // Helper to generate JWT
 const generateToken = (id, role) => {
@@ -136,7 +137,52 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// ==============================
+// DELETE ACCOUNT
+// ==============================
 
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Make sure the user exists
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Delete all products/listings belonging to this user
+    const deletedProducts = await Product.deleteMany({
+      seller: userId,
+    });
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Clear authentication cookie
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    res.status(200).json({
+      message: "Account and all listings deleted successfully",
+      deletedListings: deletedProducts.deletedCount,
+    });
+
+  } catch (error) {
+    console.error("Delete account error:", error);
+
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 // Change Password
 export const changePassword = async (req, res) => {
   try {

@@ -64,7 +64,7 @@ export default function Navbar({
           </button>
         </form>
          {/* Mobile Search bar*/}
-         <div className="md:hidden flex absolute justify-center align-center right-40 pb-2">
+         <div className="md:hidden flex  justify-center align-center right-40 pb-2">
             <input 
               type="text" 
               placeholder="Search products..." 

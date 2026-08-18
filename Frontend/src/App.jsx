@@ -21,13 +21,9 @@ import BuyerDashboard from "./pages/BuyerDashboard";
 import SellerDashboard from "./pages/SellerDashboard";
 import UpgradePayment from "./pages/UpgradePayment";
 import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
 import About from "./pages/About";
 
-
 import { apiRequest } from "./services/api";
-
-import { MOCK_PRODUCTS } from "./data/mockData";
 
 export default function App() {
   const { user } = useAuth();
@@ -36,48 +32,65 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(true);
 
   const [currentPage, setCurrentPage] = useState("home");
-
   const [selectedProductId, setSelectedProductId] = useState(null);
 
   const [cartItems, setCartItems] = useState(() => {
-  try {
-    const savedCart = localStorage.getItem("cart");
-
-    return savedCart ? JSON.parse(savedCart) : [];
-  } catch (error) {
-    console.error("Failed to load cart:", error);
-    return [];
-  }
-});
+    try {
+      const savedCart = localStorage.getItem("cart");
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error("Failed to load cart:", error);
+      return [];
+    }
+  });
 
   const [searchQuery, setSearchQuery] = useState("");
-
   const [products, setProducts] = useState([]);
-
   const [myProducts, setMyProducts] = useState([]);
+
+  // ==========================================
+  // SAVE CART
+  // ==========================================
+
   useEffect(() => {
-  localStorage.setItem("cart", JSON.stringify(cartItems));
-}, [cartItems]);
-  // Load seller products
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // ==========================================
+  // LOAD SELLER PRODUCTS
+  // ==========================================
+
   useEffect(() => {
     const loadMyProducts = async () => {
       try {
-        const data = await apiRequest('/products/my-products') ;
+        const data = await apiRequest("/products/my-products");
 
         console.log("My Products:", data);
 
-        setMyProducts(Array.isArray(data) ? data : data.products || []);
+        setMyProducts(
+          Array.isArray(data)
+            ? data
+            : data.products || []
+        );
       } catch (error) {
-        console.error("Loading my products failed:", error);
+        console.error(
+          "Loading my products failed:",
+          error
+        );
       }
     };
 
     if (user) {
       loadMyProducts();
+    } else {
+      setMyProducts([]);
     }
   }, [user]);
 
-  // Load marketplace products
+  // ==========================================
+  // LOAD MARKETPLACE PRODUCTS
+  // ==========================================
+
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -85,7 +98,11 @@ export default function App() {
 
         console.log("All Products:", data);
 
-        setProducts(Array.isArray(data) ? data : data.products || []);
+        setProducts(
+          Array.isArray(data)
+            ? data
+            : data.products || []
+        );
       } catch (error) {
         console.error(error);
       }
@@ -94,7 +111,10 @@ export default function App() {
     loadProducts();
   }, []);
 
-  // Dark mode
+  // ==========================================
+  // DARK MODE
+  // ==========================================
+
   useEffect(() => {
     const root = document.documentElement;
 
@@ -105,73 +125,135 @@ export default function App() {
     }
   }, [darkMode]);
 
+  // ==========================================
+  // AUTH-PROTECTED PAGES
+  // ==========================================
+
   
-const navigateTo = (page, param = null) => {
+  // ==========================================
+  // NAVIGATION
+  // ==========================================
 
-  if (page === 'seller-dashboard') {
-    const isPremiumSeller =
-      user?.isPremium || localStorage.getItem("isPremium") === "true";
+  const navigateTo = (page, param = null) => {
 
-    if (!isPremiumSeller) {
-      setCurrentPage('upgrade-payment');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+    // ------------------------------------------
+    // LOGIN REQUIRED
+    // ------------------------------------------
+
+    
+
+    // ------------------------------------------
+    // SELLER PREMIUM CHECK
+    // ------------------------------------------
+
+    if (page === "seller-dashboard") {
+      const isPremiumSeller =
+        user?.isPremium ||
+        localStorage.getItem("isPremium") === "true";
+
+      if (!isPremiumSeller) {
+        setCurrentPage("upgrade-payment");
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
     }
-  }
 
+    // ------------------------------------------
+    // MARKETPLACE SEARCH
+    // ------------------------------------------
 
-  if (
-    page === 'marketplace' &&
-    param &&
-    typeof param === 'object' &&
-    param.search
-  ) {
-    setSearchQuery(param.search);
-  } 
-  
-  else if (param) {
-    setSelectedProductId(param);
-  }
+    if (
+      page === "marketplace" &&
+      param &&
+      typeof param === "object" &&
+      param.search
+    ) {
+      setSearchQuery(param.search);
+    }
 
+    // ------------------------------------------
+    // PRODUCT ID / PARAMETER
+    // ------------------------------------------
 
-  setCurrentPage(page);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+    else if (param) {
+      setSelectedProductId(param);
+    }
+
+    // ------------------------------------------
+    // CHANGE PAGE
+    // ------------------------------------------
+
+    setCurrentPage(page);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // ==========================================
+  // ADD TO CART
+  // ==========================================
 
   const addToCart = (product) => {
-  setCartItems((prev) => {
-    const exists = prev.find(
-      (item) =>
-        (item._id || item.id) ===
-        (product._id || product.id)
-    );
 
-    if (exists) {
-      return prev.map((item) =>
-        (item._id || item.id) ===
-        (product._id || product.id)
-          ? { ...item, qty: item.qty + 1 }
-          : item
-      );
+    // Login required
+    if (!user) {
+      toast.error("Please login to add products to your cart.");
+
+      navigateTo("login");
+
+      return;
     }
 
-    return [
-      ...prev,
-      {
-        ...product,
-        qty: 1,
-      },
-    ];
-  });
+    setCartItems((prev) => {
+      const exists = prev.find(
+        (item) =>
+          (item._id || item.id) ===
+          (product._id || product.id)
+      );
 
-  toast.success(
-    `${product.title || product.name || "Item"} added to cart!`
-  );
-};
+      if (exists) {
+        return prev.map((item) =>
+          (item._id || item.id) ===
+          (product._id || product.id)
+            ? {
+                ...item,
+                qty: item.qty + 1,
+              }
+            : item
+        );
+      }
+
+      return [
+        ...prev,
+        {
+          ...product,
+          qty: 1,
+        },
+      ];
+    });
+
+    toast.success(
+      `${product.title || product.name || "Item"} added to cart!`
+    );
+  };
+
+  // ==========================================
+  // RENDER
+  // ==========================================
 
   return (
     <div className="min-h-screen dark:bg-[#041c14] font-sans">
+
       <Toaster position="top-right" />
+
+      {/* ================= NAVBAR ================= */}
 
       <Navbar
         lang={lang}
@@ -180,23 +262,31 @@ const navigateTo = (page, param = null) => {
         setDarkMode={setDarkMode}
         currentPage={currentPage}
         navigateTo={navigateTo}
-        cartCount={cartItems.reduce((acc, item) => acc + item.qty, 0)}
+        cartCount={cartItems.reduce(
+          (acc, item) => acc + item.qty,
+          0
+        )}
         onSearchChange={(query) => {
           setSearchQuery(query);
-
           setCurrentPage("marketplace");
         }}
       />
 
+      {/* ================= MAIN ================= */}
+
       <main>
-        {currentPage === 'home' && (
-  <Home
-    navigateTo={navigateTo}
-    addToCart={addToCart}
-    products={products}
-    
-  />
-)}
+
+        {/* HOME */}
+
+        {currentPage === "home" && (
+          <Home
+            navigateTo={navigateTo}
+            addToCart={addToCart}
+            products={products}
+          />
+        )}
+
+        {/* MARKETPLACE */}
 
         {currentPage === "marketplace" && (
           <Marketplace
@@ -207,6 +297,8 @@ const navigateTo = (page, param = null) => {
           />
         )}
 
+        {/* PRODUCT DETAILS */}
+
         {currentPage === "product-details" && (
           <ProductDetails
             products={products}
@@ -216,17 +308,24 @@ const navigateTo = (page, param = null) => {
           />
         )}
 
+        {/* SELLER DASHBOARD */}
+
         {currentPage === "seller-dashboard" && (
           <SellerDashboard
             myProducts={myProducts}
             setMyProducts={setMyProducts}
           />
         )}
+
+        {/* BUYER DASHBOARD */}
+
         {currentPage === "buyer-dashboard" && (
           <BuyerDashboard
             navigateTo={navigateTo}
           />
         )}
+
+        {/* CART */}
 
         {currentPage === "cart" && (
           <Cart
@@ -235,14 +334,20 @@ const navigateTo = (page, param = null) => {
             navigateTo={navigateTo}
           />
         )}
-        {
-          currentPage === "categories" && (
-            <Categories
-              categories={Categories}
-              navigateTo={navigateTo}
-            />
-          )
-        }
+
+        {/* CATEGORIES */}
+
+        {currentPage === "categories" && (
+          <Categories
+            categories={Categories}
+            navigateTo={navigateTo}
+            products={products}
+            addToCart={addToCart}
+          />
+        )}
+
+        {/* CHECKOUT */}
+
         {currentPage === "checkout" && (
           <Checkout
             navigateTo={navigateTo}
@@ -250,16 +355,75 @@ const navigateTo = (page, param = null) => {
             setCartItems={setCartItems}
           />
         )}
-        {currentPage === "login" && <Login navigateTo={navigateTo} />}
 
-        {currentPage === "register" && <Register navigateTo={navigateTo} />}
+        {/* LOGIN */}
+
+        {currentPage === "login" && (
+          <Login
+            navigateTo={navigateTo}
+          />
+        )}
+
+        {/* REGISTER */}
+
+        {currentPage === "register" && (
+          <Register
+            navigateTo={navigateTo}
+          />
+        )}
+
+        {/* UPGRADE PAYMENT */}
+
+        {currentPage === "upgrade-payment" && (
+          <UpgradePayment
+            navigateTo={navigateTo}
+          />
+        )}
+
+        {/* PROFILE */}
+
+        {currentPage === "profile" && (
+  <Profile navigateTo={navigateTo} />
+)}
+
+        {/* SETTINGS */}
+
+        
+
+        {/* ABOUT */}
+
+        {currentPage === "about" && (
+          <About
+            navigateTo={navigateTo}
+          />
+        )}
+
+        {/* SEARCH RESULTS */}
+
+        {currentPage === "search-results" && (
+          <SearchResults
+            products={products}
+            searchQuery={searchQuery}
+            navigateTo={navigateTo}
+            addToCart={addToCart}
+          />
+        )}
+
       </main>
 
-      <Footer navigateTo={navigateTo} />
+      {/* ================= FOOTER ================= */}
+
+      <Footer
+        navigateTo={navigateTo}
+      />
+
+      {/* ================= AI CHAT ================= */}
+
       <AIChat
-  navigateTo={navigateTo}
-  addToCart={addToCart}
-/>
+        navigateTo={navigateTo}
+        addToCart={addToCart}
+      />
+
     </div>
   );
 }

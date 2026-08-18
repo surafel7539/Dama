@@ -13,16 +13,16 @@ export default function Footer({ navigateTo, t }) {
         <div>
           <h4 className="font-bold text-xs uppercase text-[#c29b57] mb-3">Quick Links</h4>
           <ul className="space-y-2 text-xs text-gray-300">
-            <li><button onClick={() => navigateTo('home')} className="hover:text-[#c29b57]">home</button></li>
-            <li><button onClick={() => navigateTo('marketplace')} className="hover:text-[#c29b57]">marketplace</button></li>
-            <li><button onClick={() => navigateTo('categories')} className="hover:text-[#c29b57]">categories</button></li>
+            <li><button onClick={() => navigateTo('home')} className="hover:text-[#c29b57]">Home</button></li>
+            <li><button onClick={() => navigateTo('marketplace')} className="hover:text-[#c29b57]">Marketplace</button></li>
+            <li><button onClick={() => navigateTo('categories')} className="hover:text-[#c29b57]">Categories</button></li>
           </ul>
         </div>
         <div>
           <h4 className="font-bold text-xs uppercase text-[#c29b57] mb-3">Support</h4>
           <ul className="space-y-2 text-xs text-gray-300">
-            <li><button onClick={() => navigateTo('about')} className="hover:text-[#c29b57]">about</button></li>
-            <li><button onClick={() => navigateTo('contact')} className="hover:text-[#c29b57]">contact</button></li>
+            <li><button onClick={() => navigateTo('about')} className="hover:text-[#c29b57]">About</button></li>
+            
           </ul>
         </div>
         <div>

@@ -5,7 +5,8 @@ import {
   logout, 
   getProfile, 
   updateProfile, 
-  changePassword 
+  changePassword,
+  deleteAccount
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -20,5 +21,6 @@ router.post('/logout', logout);
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
 router.put('/change-password', protect, changePassword);
+router.delete("/account", protect, deleteAccount);
 
 export default router;

@@ -90,9 +90,36 @@ export const AuthProvider = ({ children }) => {
       window.location.reload();
     }
   };
+  const deleteAccount = async () => {
+  try {
+    const response = await apiRequest("/auth/account", {
+      method: "DELETE",
+    });
 
+    // Remove local authentication
+    localStorage.removeItem("token");
+
+    // Clear user state
+    setUser(null);
+
+    return response;
+  } catch (error) {
+    console.error("Delete account error:", error);
+    throw error;
+  }
+};
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
+    <AuthContext.Provider
+  value={{
+    user,
+    setUser,
+    loading,
+    login,
+    register,
+    logout,
+    deleteAccount
+  }}
+>
       {!loading && children}
     </AuthContext.Provider>
   );

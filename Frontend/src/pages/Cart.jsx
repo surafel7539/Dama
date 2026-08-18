@@ -42,7 +42,7 @@ export default function Cart({ cartItems, setCartItems, navigateTo }) {
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12">
-      <h1 className="text-2xl font-bold mb-8">Cart</h1>
+      <h1 className="text-2xl dark:text-white font-bold mb-8">Cart</h1>
       {cartItems.length === 0 ? (
         <div className="text-center py-16 bg-white dark:bg-[#0a291f] rounded-2xl border border-gray-200 dark:border-gray-800">
           <p className="text-gray-400 mb-4">Your cart is empty.</p>
