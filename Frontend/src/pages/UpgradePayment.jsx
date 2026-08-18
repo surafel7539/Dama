@@ -43,7 +43,7 @@ export default function UpgradePayment({ navigateTo }) {
         <p className="text-gray-500 dark:text-gray-400">Join thousands of successful sellers on DAMA.</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 dark:text-white gap-8">
         {/* Order Summary */}
         <div className="bg-white dark:bg-[#0a291f] p-8 rounded-2xl border border-gray-200 dark:border-gray-800 h-fit space-y-6">
           <h2 className="font-bold text-lg border-b border-gray-200 dark:border-gray-800 pb-3">Subscription Details</h2>

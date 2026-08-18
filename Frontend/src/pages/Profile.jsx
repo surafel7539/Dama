@@ -1,4 +1,167 @@
-return (
+
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { apiRequest } from '../services/api';
+
+export default function Profile({ navigateTo = () => {} }) {
+  const { user, deleteAccount, setUser } = useAuth();
+  const [activeTab , setActiveTab] = useState('profile')
+  // Profile Information State
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  // Password Change State
+  const [passwords, setPasswords] = useState({
+    currentPassword: '',
+    newPassword: '',
+  });
+
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Load user data
+  useEffect(() => {
+    if (user) {
+      setFullName(user.fullName || '');
+      setEmail(user.email || '');
+    }
+  }, [user]);
+
+  // =========================
+  // UPDATE PROFILE
+  // =========================
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+
+    setProfileLoading(true);
+
+    const toastId = toast.loading('Updating profile...');
+
+    try {
+      const data = await apiRequest('/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ fullName }),
+      });
+
+      // Update local user state
+      if (data.user) {
+        setUser(data.user);
+      }
+
+      toast.dismiss(toastId);
+      toast.success(data.message || 'Profile updated successfully!');
+    } catch (err) {
+      toast.dismiss(toastId);
+      toast.error(err.message || 'Failed to update profile.');
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // =========================
+  // CHANGE PASSWORD
+  // =========================
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+
+    if (passwords.newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters long.');
+      return;
+    }
+
+    setPasswordLoading(true);
+
+    const toastId = toast.loading('Changing password...');
+
+    try {
+      const data = await apiRequest('/auth/change-password', {
+        method: 'PUT',
+        body: JSON.stringify(passwords),
+      });
+
+      toast.dismiss(toastId);
+      toast.success(
+        data.message || 'Password changed successfully!'
+      );
+
+      setPasswords({
+        currentPassword: '',
+        newPassword: '',
+      });
+    } catch (err) {
+      toast.dismiss(toastId);
+      toast.error(err.message || 'Failed to change password.');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  // =========================
+  // DELETE ACCOUNT
+  // =========================
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to permanently delete your account?\n\nYour account and all your listings will be deleted. This cannot be undone.'
+    );
+
+    if (!confirmed) return;
+
+    const secondConfirm = window.confirm(
+      'This is permanent. Your listings will also be deleted.\n\nContinue?'
+    );
+
+    if (!secondConfirm) return;
+
+    setDeleteLoading(true);
+
+    const toastId = toast.loading('Deleting your account...');
+
+    try {
+      // Call backend
+      await apiRequest('/auth/delete-account', {
+        method: 'DELETE',
+      });
+
+      // Remove authentication data
+      localStorage.removeItem('token');
+      localStorage.removeItem('isPremium');
+
+      // Clear cart
+      localStorage.removeItem('cart');
+
+      // Clear user state
+      if (setUser) {
+        setUser(null);
+      }
+
+      toast.dismiss(toastId);
+      toast.success('Your account has been deleted.');
+
+      // Go back to home
+      navigateTo('home');
+
+      // Reload to completely clear application state
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+
+    } catch (err) {
+      toast.dismiss(toastId);
+
+      toast.error(
+        err.message || 'Failed to delete account.'
+      );
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  return (
   <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-10">
     <h1 className="text-2xl font-bold dark:text-white text-[#041c14] mb-6">
       Profile
@@ -32,7 +195,7 @@ return (
       </div>
 
       {/* CONTENT */}
-      <div className="grid lg:col-span-2 space-y-6">
+      <div className="lg:col-span-2 space-y-6">
 
         {/* PERSONAL DETAILS */}
         <div className="bg-white dark:bg-[#0a291f] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
@@ -226,3 +389,5 @@ return (
     </div>
   </div>
 );
+}
+
