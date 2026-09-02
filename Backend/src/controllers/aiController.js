@@ -190,18 +190,17 @@ For "Find electronics over 100,000 Br", call:
     // =====================================================
     // FIRST GROQ REQUEST
     // =====================================================
+let response = await groq.chat.completions.create({
+  model: "openai/gpt-oss-120b",
 
-    let response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+  messages,
 
-      messages,
+  tools,
 
-      tools,
+  tool_choice: "auto",
 
-      tool_choice: "auto",
-
-      temperature: 0.2,
-    });
+  temperature: 0.2,
+});
 
     const assistantMessage = response.choices[0]?.message;
 
