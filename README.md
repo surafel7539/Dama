@@ -1,3 +1,12 @@
-An Ecommerce website called Dama MarketPlace built with MERN Stack 
-its a place where You can Shop products from trusted sellers, discover unique finds, and experience a marketplace built for you.
-its a place where you can find Authentic luxury and trusted commerce platform across Ethiopia.
+# Dama Marketplace
+
+One Next.js app for the storefront and the API.
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+The shop and the API run together. API routes live under `/api` (for example `/api/products` and `/api/auth/login`). Put `MONGO_URL`, `JWT_SECRET`, Cloudinary, and `AI_API_KEY` in `.env` at the project root.
