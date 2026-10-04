@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login({ navigateTo = () => {} }) {
@@ -9,6 +10,7 @@ export default function Login({ navigateTo = () => {} }) {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,13 +54,23 @@ export default function Login({ navigateTo = () => {} }) {
 
           <div>
             <label className="text-xs font-bold text-gray-400 block mb-1">Password</label>
-            <input 
-              type="password" 
-              required 
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded p-3 text-sm focus:ring-1 focus:ring-[#c29b57] focus:border-[#c29b57] focus:outline-none" 
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                required 
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded p-3 pr-10 text-sm focus:ring-1 focus:ring-[#c29b57] focus:border-[#c29b57] focus:outline-none" 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((value) => !value)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8ba39a]"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
           <button 

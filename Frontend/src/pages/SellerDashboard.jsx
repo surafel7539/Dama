@@ -446,6 +446,17 @@ const [revenue, setRevenue] = useState(0);
             Add Product
           </button>
 
+          <button
+            onClick={() => setActiveTab("orders")}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm ${
+              activeTab === "orders"
+                ? "bg-[#c29b57] text-[#041c14]"
+                : "bg-gray-100 dark:bg-[#041c14] text-gray-600 dark:text-gray-300"
+            }`}
+          >
+            Orders
+          </button>
+
         </div>
       </div>
 
@@ -609,7 +620,7 @@ const [revenue, setRevenue] = useState(0);
                           e.currentTarget.src =
                             "https://placehold.co/200x200?text=No+Image";
                         }}
-                        className="w-16 h-16 object-contain rounded-xl bg-gray-800 border border-gray-700"
+                        className="w-16 h-16 object-contain rounded-xl bg-[#f4f5f7] dark:bg-[#041c14] border border-gray-200 dark:border-[#17382d]"
                       />
 
                       <div>
@@ -630,9 +641,16 @@ const [revenue, setRevenue] = useState(0);
                           ).toLocaleString()}
                         </p>
 
-                        <p className="text-xs text-gray-400 mt-1">
-                          Stock:{" "}
-                          {product.stock ?? 0}
+                        <p className={`text-xs mt-1 font-bold ${
+                          Number(product.stock || 0) === 0
+                            ? "text-red-400"
+                            : Number(product.stock || 0) <= 5
+                            ? "text-[#c29b57]"
+                            : "text-gray-400"
+                        }`}>
+                          {Number(product.stock || 0) === 0
+                            ? "Out of stock"
+                            : `Stock: ${product.stock ?? 0}`}
                         </p>
 
                       </div>
@@ -676,6 +694,67 @@ const [revenue, setRevenue] = useState(0);
 
           )}
 
+        </div>
+      )}
+
+      {activeTab === "orders" && (
+        <div className="bg-white dark:bg-[#0a291f] p-6 rounded-3xl border border-gray-200 dark:border-gray-800 space-y-4">
+          <h2 className="font-bold text-lg text-[#041c14] dark:text-white border-b border-gray-200 dark:border-gray-800 pb-4">
+            Customer Orders
+          </h2>
+
+          {loadingOrders ? (
+            <div className="text-center py-12 text-gray-400">Loading orders...</div>
+          ) : sellerOrders.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              No orders for your products yet.
+            </div>
+          ) : (
+            sellerOrders.map((order) => {
+              const buyerName =
+                order.buyer?.fullName || order.buyer?.email || "Customer";
+
+              return (
+                <div
+                  key={order._id}
+                  className="p-4 rounded-2xl bg-[#f4f5f7] dark:bg-[#041c14] border border-gray-200 dark:border-[#17382d]"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <p className="font-bold text-[#041c14] dark:text-white">
+                        Order #{String(order._id).slice(-8).toUpperCase()}
+                      </p>
+                      <p className="text-xs text-[#8ba39a] mt-1">
+                        {buyerName}
+                        {order.createdAt
+                          ? ` · ${new Date(order.createdAt).toLocaleDateString()}`
+                          : ""}
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded bg-[#c29b57]/15 text-[#c29b57] w-fit">
+                      {order.status || "Pending"}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 space-y-1">
+                    {order.items?.map((item, index) => (
+                      <div
+                        key={`${order._id}-${index}`}
+                        className="flex justify-between text-sm"
+                      >
+                        <span>
+                          {item.title || item.product?.title || "Product"} × {item.quantity}
+                        </span>
+                        <span className="font-bold text-[#c29b57]">
+                          Br {(Number(item.price || 0) * Number(item.quantity || 0)).toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       )}
 

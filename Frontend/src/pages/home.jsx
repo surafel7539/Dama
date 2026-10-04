@@ -11,70 +11,33 @@ import {
 } from "lucide-react";
 
 import ProductCard from "../components/ProductCard";
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "../data/mockData";
+import { MOCK_PRODUCTS } from "../data/mockData";
+import { buildCategories, productId, ratingOf } from "../utils/product";
 
 export default function Home({
   navigateTo = () => {},
   addToCart = () => {},
   products = [],
-  categories = [],
+  productsLoading = false,
+  productsError = false,
+  recentProducts = [],
+  wishlistIds = [],
+  onToggleWishlist,
 }) {
-  // Use real API data when available, otherwise use mock data
-  
+  const productList =
+    productsError && (!Array.isArray(products) || products.length === 0)
+      ? MOCK_PRODUCTS
+      : Array.isArray(products)
+      ? products
+      : [];
 
-// Generate categories from real products
-
-
-
-const getCategoryIcon = (category) => {
-  const name = category.toLowerCase();
-
-  if (name.includes("electronic")) return "📱";
-  if (name.includes("fashion") || name.includes("cloth")) return "👕";
-  if (name.includes("home") || name.includes("living")) return "🏠";
-  if (name.includes("beauty") || name.includes("cosmetic")) return "💄";
-  if (name.includes("food")) return "🍔";
-  if (name.includes("accessory")) return "👜";
-  if (name.includes("sport")) return "⚽";
-  if (name.includes("book")) return "📚";
-  if (name.includes("phone") || name.includes("mobile")) return "📱";
-  if (name.includes("computer") || name.includes("laptop")) return "💻";
-  if (name.includes("shoe")) return "👟";
-  if (name.includes("jewel")) return "💎";
-  if (name.includes("furniture")) return "🛋️";
-  if (name.includes("toy")) return "🧸";
-  if (name.includes("car") || name.includes("vehicle")) return "🚗";
-
-  return "📦";
-};
-
-const productList =
-  Array.isArray(products) && products.length > 0
-    ? products
-    : MOCK_PRODUCTS;
-
-const categoryMap = {};
-
-productList.forEach((product) => {
-  const category = product.category;
-
-  if (!category) return;
-
-  if (!categoryMap[category]) {
-    categoryMap[category] = 0;
-  }
-
-  categoryMap[category]++;
-});
-
-const categoryList = Object.entries(categoryMap).map(
-  ([name, count], index) => ({
-    id: index,
-    name,
-    count,
-    icon: getCategoryIcon(name),
-  })
-);
+  const categoryList = buildCategories(productList);
+  const rated = productList
+    .map((product) => ratingOf(product))
+    .filter((value) => value !== null);
+  const averageRating = rated.length
+    ? (rated.reduce((sum, value) => sum + value, 0) / rated.length).toFixed(1)
+    : "New";
   return (
     <div className="pb-20">
 
@@ -156,7 +119,7 @@ const categoryList = Object.entries(categoryMap).map(
 
                 <div>
                   <p className="text-2xl font-extrabold text-[#c29b57]">
-                    4.9
+                    {productsLoading && productList.length === 0 ? "—" : averageRating}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     Average Rating
@@ -314,7 +277,7 @@ const categoryList = Object.entries(categoryMap).map(
                 </h3>
 
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {catCount} items
+                  {catCount} {catCount === 1 ? "item" : "items"}
                 </p>
 
               </button>
@@ -367,7 +330,16 @@ const categoryList = Object.entries(categoryMap).map(
         </div>
 
 
-        {productList.length === 0 ? (
+        {productsLoading && productList.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-80 rounded-2xl bg-white dark:bg-[#0a291f] border border-gray-200 dark:border-[#17382d] animate-pulse"
+              />
+            ))}
+          </div>
+        ) : productList.length === 0 ? (
 
           <div className="text-center py-20 bg-white dark:bg-[#0a291f] rounded-3xl border border-gray-200 dark:border-gray-800">
 
@@ -391,16 +363,16 @@ const categoryList = Object.entries(categoryMap).map(
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
             {productList.slice(0, 8).map((product) => {
-
-              const productId =
-                product._id || product.id;
+              const id = String(productId(product));
 
               return (
                 <ProductCard
-                  key={productId}
+                  key={id}
                   product={product}
                   navigateTo={navigateTo}
                   addToCart={addToCart}
+                  saved={wishlistIds.includes(id)}
+                  onToggleWishlist={onToggleWishlist}
                 />
               );
             })}
@@ -419,6 +391,34 @@ const categoryList = Object.entries(categoryMap).map(
 
       </section>
 
+
+      {recentProducts.length > 0 && (
+        <section className="max-w-[1500px] mx-auto px-5 sm:px-10 mt-20">
+          <div className="mb-8">
+            <p className="text-[#c29b57] text-xs font-bold uppercase tracking-widest mb-2">
+              Continue browsing
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
+              Recently Viewed
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {recentProducts.slice(0, 4).map((product) => {
+              const id = String(productId(product));
+              return (
+                <ProductCard
+                  key={id}
+                  product={product}
+                  navigateTo={navigateTo}
+                  addToCart={addToCart}
+                  saved={wishlistIds.includes(id)}
+                  onToggleWishlist={onToggleWishlist}
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* ========================================================= */}
       {/* SELLER CTA */}

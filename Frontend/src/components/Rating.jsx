@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 
 export default function Rating({
@@ -8,6 +8,10 @@ export default function Rating({
 }) {
   const [rating, setRating] = useState(initialRating);
   const [hoverRating, setHoverRating] = useState(0);
+
+  useEffect(() => {
+    setRating(initialRating || 0);
+  }, [initialRating]);
 
   const displayRating = hoverRating || rating;
 

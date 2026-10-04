@@ -22,7 +22,8 @@ export default function Footer({ navigateTo, t }) {
           <h4 className="font-bold text-xs uppercase text-[#c29b57] mb-3">Support</h4>
           <ul className="space-y-2 text-xs text-gray-300">
             <li><button onClick={() => navigateTo('about')} className="hover:text-[#c29b57]">About</button></li>
-            
+            <li><button onClick={() => navigateTo('wishlist')} className="hover:text-[#c29b57]">Wishlist</button></li>
+            <li><button onClick={() => navigateTo('cart')} className="hover:text-[#c29b57]">Cart</button></li>
           </ul>
         </div>
         <div>

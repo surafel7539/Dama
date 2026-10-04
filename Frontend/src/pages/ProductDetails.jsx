@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Star, ArrowLeft, Trash2 } from "lucide-react";
+import { Star, ArrowLeft, Trash2, Heart, Minus, Plus } from "lucide-react";
 import Rating from "../components/Rating";
 import {
   apiRequest,
@@ -7,15 +7,28 @@ import {
   deleteProductRating,
 } from "../services/api";
 import toast from "react-hot-toast";
+import ProductCard from "../components/ProductCard";
+import {
+  productId,
+  productName,
+  categoryName,
+  sellerName,
+  stockOf,
+  formatPrice,
+  ratingOf,
+} from "../utils/product";
 
 export default function ProductDetails({
-  productId,
+  productId: selectedId,
   products = [],
   addToCart,
   navigateTo,
+  saved = false,
+  onToggleWishlist,
+  wishlistIds = [],
 }) {
   const product = products.find(
-    (p) => String(p._id || p.id) === String(productId)
+    (p) => String(productId(p)) === String(selectedId)
   );
 
   const [hasRated, setHasRated] = useState(false);
@@ -24,6 +37,7 @@ export default function ProductDetails({
   const [comment, setComment] = useState("");
   const [reviews, setReviews] = useState(product?.ratings || []);
   const [currentUser, setCurrentUser] = useState(null);
+  const [qty, setQty] = useState(1);
 
   useEffect(() => {
     const loadCurrentUser = async () => {
@@ -39,12 +53,16 @@ export default function ProductDetails({
   }, []);
 
   useEffect(() => {
-    if (!productId) return;
+    setQty(1);
+  }, [selectedId]);
+
+  useEffect(() => {
+    if (!selectedId) return;
 
     const checkRating = async () => {
       try {
         const data = await apiRequest(
-          `/products/${productId}/has-rated`
+          `/products/${selectedId}/has-rated`
         );
 
         setHasRated(data.hasRated);
@@ -58,7 +76,7 @@ export default function ProductDetails({
     };
 
     checkRating();
-  }, [productId]);
+  }, [selectedId]);
 
   useEffect(() => {
     if (product?.ratings) {
@@ -84,26 +102,27 @@ export default function ProductDetails({
     );
   }
 
-  const stock = Number(product.stock || 0);
+  const stock = stockOf(product);
+  const outOfStock = stock !== null && stock <= 0;
+  const maxQty = stock === null ? 20 : Math.max(stock, 1);
+
+  const related = products
+    .filter((item) => {
+      if (String(productId(item)) === String(selectedId)) return false;
+      const sameCategory =
+        categoryName(item.category) &&
+        categoryName(item.category) === categoryName(product.category);
+      return sameCategory;
+    })
+    .slice(0, 4);
 
   const handleAddToCart = () => {
-    if (stock <= 0) {
-      toast.error("This product is out of stock.");
-      return;
-    }
-
-    addToCart(product);
-    toast.success("Added to cart!");
+    addToCart(product, qty);
   };
 
   const handleBuyNow = () => {
-    if (stock <= 0) {
-      toast.error("This product is out of stock.");
-      return;
-    }
-
-    addToCart(product);
-    navigateTo("checkout");
+    const added = addToCart(product, qty);
+    if (added) navigateTo("checkout");
   };
 
   const submitRating = async (rating) => {
@@ -229,26 +248,35 @@ export default function ProductDetails({
 
       <div className="grid md:grid-cols-2 gap-12 bg-white dark:bg-[#0a291f] p-8 rounded-2xl">
 
-        <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-xl p-6 flex items-center justify-center">
+        <div className="aspect-square bg-[#f4f5f7] dark:bg-[#041c14] rounded-xl p-6 flex items-center justify-center border border-gray-200 dark:border-[#17382d]">
           <img
             src={product.image || product.imageUrl}
-            alt={product.title || product.name}
+            alt={productName(product)}
             className="w-full h-full object-contain"
+            onError={(event) => {
+              event.target.onerror = null;
+              event.target.src =
+                "https://placehold.co/800x800/f4f5f7/041c14?text=No+Image";
+            }}
           />
         </div>
 
         <div>
 
-          <h1 className="text-3xl font-bold mt-2">
-            {product.title || product.name}
+          {categoryName(product.category) && (
+            <p className="text-xs font-bold uppercase tracking-widest text-[#c29b57]">
+              {categoryName(product.category)}
+            </p>
+          )}
+
+          <h1 className="text-3xl font-bold mt-2 text-[#041c14] dark:text-white">
+            {productName(product)}
           </h1>
 
-          <p className="mt-4 text-gray-400">
+          <p className="mt-4 text-[#8ba39a]">
             Sold by:
-            <span className="ml-2 text-white">
-              {product.seller?.fullName ||
-                product.seller ||
-                "Unknown"}
+            <span className="ml-2 text-[#041c14] dark:text-white font-semibold">
+              {sellerName(product.seller)}
             </span>
           </p>
 
@@ -260,8 +288,8 @@ export default function ProductDetails({
             />
 
             <span className="font-bold">
-              {product.averageRating
-                ? Number(product.averageRating).toFixed(1)
+              {ratingOf(product) !== null
+                ? ratingOf(product).toFixed(1)
                 : "No rating"}
             </span>
 
@@ -272,35 +300,70 @@ export default function ProductDetails({
           </div>
 
           <h2 className="text-3xl font-bold text-[#c29b57] mt-6">
-            Br {Number(product.price || 0).toLocaleString()}
+            {formatPrice(product.price)}
           </h2>
 
-          <p className="text-lg text-gray-400 mt-2">
-            Stock:
-            <span className="font-bold ml-2">
-              {stock}
-            </span>
+          <p className={`text-sm font-bold mt-3 ${outOfStock ? "text-red-400" : "text-green-600 dark:text-green-400"}`}>
+            {stock === null
+              ? "Available"
+              : outOfStock
+              ? "Out of stock"
+              : `${stock} in stock`}
           </p>
+
+          <div className="flex items-center gap-3 mt-5">
+            <span className="text-sm font-bold text-[#8ba39a]">Quantity</span>
+            <button
+              type="button"
+              onClick={() => setQty((value) => Math.max(1, value - 1))}
+              className="p-2 rounded-lg bg-[#f4f5f7] dark:bg-[#041c14] border border-gray-200 dark:border-[#17382d]"
+            >
+              <Minus size={16} />
+            </button>
+            <span className="font-bold min-w-6 text-center">{qty}</span>
+            <button
+              type="button"
+              onClick={() => setQty((value) => Math.min(maxQty, value + 1))}
+              disabled={qty >= maxQty}
+              className="p-2 rounded-lg bg-[#f4f5f7] dark:bg-[#041c14] border border-gray-200 dark:border-[#17382d] disabled:opacity-40"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
 
           <p className="mt-5 text-gray-400">
             {product.description ||
               "High quality product crafted with care."}
           </p>
 
-          <div className="mt-8 grid grid-cols-2 gap-4">
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-[auto_1fr_1fr] gap-3">
+            {onToggleWishlist && (
+              <button
+                type="button"
+                onClick={() => onToggleWishlist(product)}
+                className={`px-4 py-3 rounded-xl border font-bold flex items-center justify-center gap-2 ${
+                  saved
+                    ? "bg-[#c29b57] text-[#041c14] border-[#c29b57]"
+                    : "border-gray-200 dark:border-[#17382d] hover:border-[#c29b57]"
+                }`}
+              >
+                <Heart size={18} className={saved ? "fill-current" : ""} />
+                {saved ? "Saved" : "Save"}
+              </button>
+            )}
 
             <button
               onClick={handleAddToCart}
-              disabled={stock <= 0}
+              disabled={outOfStock}
               className="w-full bg-transparent border-2 border-[#c29b57] text-[#c29b57] py-3 rounded-xl font-bold hover:bg-[#c29b57]/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {stock > 0 ? "Add To Cart" : "Out of Stock"}
+              {outOfStock ? "Out of Stock" : "Add To Cart"}
             </button>
 
             <button
               onClick={handleBuyNow}
-              disabled={stock <= 0}
-              className="w-full bg-[#c29b57] text-black py-3 rounded-xl font-bold hover:bg-[#a88548] disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={outOfStock}
+              className="w-full bg-[#c29b57] text-[#041c14] py-3 rounded-xl font-bold hover:bg-[#a88548] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Buy Now
             </button>
@@ -311,7 +374,7 @@ export default function ProductDetails({
 
       <div className="mt-10 bg-white dark:bg-[#0a291f] rounded-2xl p-8">
 
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-bold mb-6 text-[#041c14] dark:text-white">
           Customer Reviews
         </h2>
 
@@ -436,6 +499,29 @@ export default function ProductDetails({
         </div>
 
       </div>
+
+      {related.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6 text-[#041c14] dark:text-white">
+            More in {categoryName(product.category) || "this category"}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {related.map((item) => {
+              const id = String(productId(item));
+              return (
+                <ProductCard
+                  key={id}
+                  product={item}
+                  navigateTo={navigateTo}
+                  addToCart={addToCart}
+                  saved={wishlistIds.includes(id)}
+                  onToggleWishlist={onToggleWishlist}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

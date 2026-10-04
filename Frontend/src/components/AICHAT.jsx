@@ -1,12 +1,24 @@
-import React, { useState } from "react";
-import { Send, Bot, X, MessageCircle } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Send, Bot, X } from "lucide-react";
 import { apiRequest } from "../services/api";
 import ProductCard from "./ProductCard";
 
-export default function AIChat({ navigateTo, addToCart }) {
+const SUGGESTIONS = [
+  "Show products in stock",
+  "What are the top rated items?",
+  "Find something under 5000",
+];
+
+export default function AIChat({
+  navigateTo,
+  addToCart,
+  wishlistIds = [],
+  onToggleWishlist,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const threadRef = useRef(null);
 
   const [messages, setMessages] = useState([
     {
@@ -17,12 +29,22 @@ export default function AIChat({ navigateTo, addToCart }) {
     },
   ]);
 
-  const sendMessage = async (e) => {
-    e?.preventDefault();
+  useEffect(() => {
+    if (threadRef.current) {
+      threadRef.current.scrollTop = threadRef.current.scrollHeight;
+    }
+  }, [messages, loading, isOpen]);
 
-    if (!message.trim() || loading) return;
+  const openProduct = (page, param) => {
+    setIsOpen(false);
+    navigateTo(page, param);
+  };
 
-    const userMessage = message.trim();
+  const sendMessage = async (event, preset) => {
+    event?.preventDefault();
+
+    const userMessage = (preset || message).trim();
+    if (!userMessage || loading) return;
 
     // Show user's message immediately
     setMessages((prev) => [
@@ -114,7 +136,7 @@ export default function AIChat({ navigateTo, addToCart }) {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#041c14]">
+          <div ref={threadRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#f4f5f7] dark:bg-[#041c14]">
 
             {messages.map((msg, index) => (
               <div
@@ -150,8 +172,13 @@ export default function AIChat({ navigateTo, addToCart }) {
                               <ProductCard
                                 key={product._id || product.id}
                                 product={product}
-                                navigateTo={navigateTo}
-                                addToCart={addToCart}
+                                navigateTo={openProduct}
+                                addToCart={(item, qty) => {
+                                  setIsOpen(false);
+                                  addToCart(item, qty);
+                                }}
+                                saved={wishlistIds.includes(String(product._id || product.id))}
+                                onToggleWishlist={onToggleWishlist}
                               />
                             ))}
                           </div>
@@ -186,6 +213,20 @@ export default function AIChat({ navigateTo, addToCart }) {
           </div>
 
           {/* Input */}
+          <div className="px-3 pt-3 flex gap-2 overflow-x-auto bg-white dark:bg-[#0a291f]">
+            {SUGGESTIONS.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => sendMessage(null, suggestion)}
+                disabled={loading}
+                className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border border-[#c29b57]/40 text-[#c29b57] hover:bg-[#c29b57]/10 disabled:opacity-50"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+
           <form
             onSubmit={sendMessage}
             className="p-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a291f]"

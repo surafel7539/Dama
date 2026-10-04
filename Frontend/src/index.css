@@ -9,3 +9,27 @@
   --color-dama-white: #ffffff;
   --color-dama-textMuted: #8ba39a;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #f4f5f7;
+  color: #041c14;
+}
+
+.dark body {
+  background-color: #041c14;
+  color: #ffffff;
+}
+
+::selection {
+  background: #c29b57;
+  color: #041c14;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c29b57 transparent;
+}

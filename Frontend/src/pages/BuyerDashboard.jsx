@@ -6,6 +6,7 @@ import { apiRequest } from "../services/api";
 export default function BuyerDashboard({ navigateTo }) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("orders");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
@@ -242,8 +243,25 @@ export default function BuyerDashboard({ navigateTo }) {
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {["All", ...new Set(orders.map((order) => order.status || "Pending"))].map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => setStatusFilter(status)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
+                            statusFilter === status
+                              ? "bg-[#c29b57] text-[#041c14] border-[#c29b57]"
+                              : "border-gray-200 dark:border-[#17382d] text-gray-600 dark:text-gray-300"
+                          }`}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
 
-                    {orders.map((order) => (
+                    {orders
+                      .filter((order) => statusFilter === "All" || (order.status || "Pending") === statusFilter)
+                      .map((order) => (
                       <div
                         key={order._id}
                         className="p-4 border border-gray-200 dark:border-gray-800 rounded-lg"
@@ -311,6 +329,12 @@ export default function BuyerDashboard({ navigateTo }) {
 
                       </div>
                     ))}
+
+                    {orders.filter((order) => statusFilter === "All" || (order.status || "Pending") === statusFilter).length === 0 && (
+                      <p className="text-sm text-[#8ba39a] py-6 text-center">
+                        No orders with that status.
+                      </p>
+                    )}
 
                   </div>
                 )}

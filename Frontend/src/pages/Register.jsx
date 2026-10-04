@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register({ navigateTo = () => {} }) {
@@ -7,18 +8,35 @@ export default function Register({ navigateTo = () => {} }) {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters.');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+
     setLoading(true);
     const toastId = toast.loading('Creating account...');
 
     try {
       // Calls the actual register function from your AuthContext and backend API
-      await register(formData);
+      await register({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      });
 
       toast.dismiss(toastId);
       toast.success('Registration Successful!');
@@ -64,11 +82,34 @@ export default function Register({ navigateTo = () => {} }) {
 
           <div>
             <label className="text-xs font-bold text-gray-400 block mb-1">Password</label>
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                required 
+                minLength={8}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded p-3 pr-10 text-sm focus:ring-1 focus:ring-[#c29b57] focus:border-[#c29b57] focus:outline-none" 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((value) => !value)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8ba39a]"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            <p className="text-[11px] text-[#8ba39a] mt-1">At least 8 characters.</p>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-gray-400 block mb-1">Confirm Password</label>
             <input 
-              type="password" 
+              type={showPassword ? "text" : "password"} 
               required 
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               className="w-full bg-gray-50 dark:bg-[#041c14] border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded p-3 text-sm focus:ring-1 focus:ring-[#c29b57] focus:border-[#c29b57] focus:outline-none" 
             />
           </div>
